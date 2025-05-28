@@ -8,8 +8,8 @@ issue_tracker: https://github.com/sinnoorc/open_mail_launcher/issues
 topics:
   - email
   - mail
-  - compose email
-  - open email app
+  - compose_email
+  - open_email_app
 
 environment:
   sdk: ^3.8.0
