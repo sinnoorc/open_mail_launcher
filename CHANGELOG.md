@@ -1,3 +1,22 @@
+## 0.1.0
+
+### Swift Package Manager Support Added
+
+* **iOS Swift Package Manager**: Added complete Swift Package Manager support for iOS platform
+  - Added `ios/open_mail_launcher/Package.swift` with iOS 12.0+ support
+  - Restructured iOS files to follow SPM conventions
+  - Maintained backward compatibility with CocoaPods
+  - Updated podspec to point to new SPM structure
+  - Added proper resource handling for PrivacyInfo.xcprivacy
+* **Enhanced Compatibility**: Plugin now works with both CocoaPods and Swift Package Manager
+* **Future-Ready**: Prepared for Flutter's transition to Swift Package Manager as default
+
+### Technical Changes
+- Moved iOS source files to `ios/open_mail_launcher/Sources/open_mail_launcher/`
+- Updated resource bundling for SPM compatibility
+- Added proper Swift Package Manager product naming
+- Maintained all existing functionality and API
+
 ## 0.0.1
 
 ### Initial Release

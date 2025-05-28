@@ -1,6 +1,6 @@
 name: open_mail_launcher
 description: "A Flutter plugin to open email apps on Android and iOS. Query installed email apps, compose emails with pre-filled content, and provide a seamless email app selection experience."
-version: 0.0.1
+version: 0.1.0
 homepage: https://github.com/sinnoorc/open_mail_launcher
 repository: https://github.com/sinnoorc/open_mail_launcher
 issue_tracker: https://github.com/sinnoorc/open_mail_launcher/issues
