@@ -19,6 +19,16 @@ A Flutter plugin to open email applications on Android and iOS. This plugin allo
 ✅ **Pre-filled composition**: Support for To, CC, BCC, subject, and body  
 ✅ **Attachment support**: File attachments on Android  
 ✅ **Picker dialog**: Built-in UI for selecting from multiple apps  
+✅ **Swift Package Manager**: Full SPM support for iOS (iOS 12.0+)  
+
+## Screenshots
+
+<div align="center">
+  <img src="screenshots/app_demo.png" alt="App Demo" width="300"/>
+  <img src="screenshots/mail_compose.png" alt="Mail Compose" width="300"/>
+</div>
+
+*Left: Open Mail Launcher demo app interface | Right: iOS Mail app with pre-filled content*
 
 ## Installation
 
@@ -26,7 +36,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  open_mail_launcher: ^0.0.1
+  open_mail_launcher: ^0.1.0
 ```
 
 Then run:
@@ -247,7 +257,7 @@ try {
 
 ## Example
 
-See the [example](example/) directory for a complete sample app demonstrating all features.
+See the [complete example app](https://pub.dev/packages/open_mail_launcher/example) on pub.dev or check the [example directory](example/) for a full sample demonstrating all features.
 
 ## Contributing
 
