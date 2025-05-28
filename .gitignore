@@ -31,3 +31,6 @@ migrate_working_dir/
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
+
+# Keep .gitkeep files for empty directories that need to be published
+!.gitkeep
