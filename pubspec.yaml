@@ -6,10 +6,9 @@ repository: https://github.com/sinnoorc/open_mail_launcher
 issue_tracker: https://github.com/sinnoorc/open_mail_launcher/issues
 
 topics:
+  - utils
+  - utilities
   - email
-  - mail
-  - compose_email
-  - open_email_app
 
 environment:
   sdk: ^3.8.0
