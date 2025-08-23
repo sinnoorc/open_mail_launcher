@@ -1,3 +1,9 @@
+## 0.1.1
+
+### Bug Fixes
+
+* **iOS**: Fixed issue with Swift Package Manager support
+
 ## 0.1.0
 
 ### Swift Package Manager Support Added
