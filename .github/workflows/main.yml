@@ -1,0 +1,38 @@
+name: Open Mail Launcher CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Format Code
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Code
+        run: flutter analyze
+
+      - name: Run Tests
+        run: flutter test --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage/lcov.info

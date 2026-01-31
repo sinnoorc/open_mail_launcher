@@ -109,7 +109,7 @@ class MailAppPickerDialog extends StatelessWidget {
                       Uri.parse(mailApp.icon!).data!.contentAsBytes(),
                       width: 32,
                       height: 32,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.email),
+                      errorBuilder: (_, _, _) => const Icon(Icons.email),
                     )
                   : const Icon(Icons.email),
               title: Text(mailApp.name),

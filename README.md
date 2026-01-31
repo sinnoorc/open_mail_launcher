@@ -3,6 +3,8 @@
 [![pub package](https://img.shields.io/pub/v/open_mail_launcher.svg)](https://pub.dev/packages/open_mail_launcher)
 [![Flutter](https://img.shields.io/badge/Flutter-3.32.0+-blue.svg)](https://flutter.dev)
 [![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-green.svg)](https://flutter.dev)
+[![Open Mail Launcher CI](https://github.com/sinnoorc/open_mail_launcher/actions/workflows/main.yml/badge.svg)](https://github.com/sinnoorc/open_mail_launcher/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/sinnoorc/open_mail_launcher/graph/badge.svg?token=YOUR_TOKEN_HERE)](https://codecov.io/gh/sinnoorc/open_mail_launcher)
 
 A Flutter plugin to open email applications on Android and iOS. This plugin allows you to:
 
@@ -19,7 +21,7 @@ A Flutter plugin to open email applications on Android and iOS. This plugin allo
 ✅ **Pre-filled composition**: Support for To, CC, BCC, subject, and body  
 ✅ **Attachment support**: File attachments on Android  
 ✅ **Picker dialog**: Built-in UI for selecting from multiple apps  
-✅ **Swift Package Manager**: Full SPM support for iOS (iOS 12.0+)  
+✅ **Swift Package Manager**: Full SPM support for iOS (iOS 12.0+)
 
 ## Screenshots
 
@@ -28,7 +30,7 @@ A Flutter plugin to open email applications on Android and iOS. This plugin allo
   <img src="screenshots/mail_compose.png" alt="Mail Compose" width="300"/>
 </div>
 
-*Left: Open Mail Launcher demo app interface | Right: iOS Mail app with pre-filled content*
+_Left: Open Mail Launcher demo app interface | Right: iOS Mail app with pre-filled content_
 
 ## Installation
 
@@ -123,7 +125,7 @@ if (result.didOpen) {
     mailApps: result.options,
     title: 'Choose Email App',
   );
-  
+
   if (selectedApp != null) {
     // Open the selected email app
     bool opened = await OpenMailLauncher.openSpecificMailApp(
@@ -230,7 +232,7 @@ The plugin provides comprehensive error handling:
 ```dart
 try {
   OpenMailAppResult result = await OpenMailLauncher.openMailApp();
-  
+
   if (result.error != null) {
     print('Error: ${result.error}');
   }
@@ -261,7 +263,7 @@ See the [complete example app](https://pub.dev/packages/open_mail_launcher/examp
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please check out the [Usage Guide](CONTRIBUTING.md) for details on how to contribute. Feel free to submit a Pull Request.
 
 ## License
 
