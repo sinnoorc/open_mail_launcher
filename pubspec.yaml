@@ -10,10 +10,6 @@ topics:
   - utilities
   - email
   - mail
-  - launcher
-  - email-client
-  - intent
-  - url-schemes
 
 environment:
   sdk: ^3.8.0
