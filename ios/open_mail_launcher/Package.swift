@@ -11,14 +11,18 @@ let package = Package(
     products: [
         .library(name: "open-mail-launcher", targets: ["open_mail_launcher"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework")
+    ],
     targets: [
         .target(
             name: "open_mail_launcher",
-            dependencies: [],
+            dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework")
+            ],
             resources: [
                 .process("PrivacyInfo.xcprivacy")
             ]
         )
     ]
-) 
+)
