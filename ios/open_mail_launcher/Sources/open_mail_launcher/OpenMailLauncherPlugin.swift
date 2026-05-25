@@ -1,6 +1,5 @@
 import Flutter
 import UIKit
-import MessageUI
 
 public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
   // Apps probed via canOpenURL. Each entry requires its scheme to be
