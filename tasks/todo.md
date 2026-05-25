@@ -9,7 +9,7 @@
 - [x] Fix Android attachment intent handling.
 - [x] Harden Dart models, picker icon decoding, and platform-channel tests.
 - [x] Commit Flutter 3.44 example platform migrations.
-- [ ] Polish CI tooling versions.
+- [x] Polish CI tooling versions.
 - [ ] Run verification commands and record results.
 
 ## Review
