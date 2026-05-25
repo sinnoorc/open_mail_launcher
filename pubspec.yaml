@@ -6,10 +6,17 @@ repository: https://github.com/sinnoorc/open_mail_launcher
 issue_tracker: https://github.com/sinnoorc/open_mail_launcher/issues
 
 topics:
-  - utils
-  - utilities
   - email
   - mail
+  - plugin
+  - utility
+  - launcher
+
+screenshots:
+  - description: "Demo app — list of detected mail apps with compose form."
+    path: screenshots/app_demo.png
+  - description: "iOS Mail app opened from the plugin with pre-filled content."
+    path: screenshots/mail_compose.png
 
 environment:
   sdk: ^3.8.0
