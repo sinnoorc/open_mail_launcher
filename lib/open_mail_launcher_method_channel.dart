@@ -71,10 +71,11 @@ class MethodChannelOpenMailLauncher extends OpenMailLauncherPlatform {
     EmailContent? emailContent,
   }) async {
     try {
-      final bool? result = await methodChannel.invokeMethod(
-        'openSpecificMailApp',
-        {'appId': appId, ...?emailContent?.toMap()},
-      );
+      final bool? result = await methodChannel
+          .invokeMethod('openSpecificMailApp', <String, Object?>{
+            'appId': appId,
+            if (emailContent != null) 'emailContent': emailContent.toMap(),
+          });
       return result ?? false;
     } on PlatformException catch (e) {
       debugPrint('Error opening specific mail app: ${e.message}');

@@ -45,7 +45,8 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
       }
       "openSpecificMailApp" -> {
         val appId = call.argument<String>("appId") ?: ""
-        val emailContent = call.arguments as? Map<String, Any>
+        @Suppress("UNCHECKED_CAST")
+        val emailContent = call.argument<Map<String, Any>>("emailContent")
         openSpecificMailApp(appId, emailContent, result)
       }
       "composeEmail" -> {

@@ -42,7 +42,8 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
     case "openSpecificMailApp":
       if let args = call.arguments as? [String: Any],
          let appId = args["appId"] as? String {
-        openSpecificMailApp(appId: appId, emailContent: args, result: result)
+        let emailContent = args["emailContent"] as? [String: Any]
+        openSpecificMailApp(appId: appId, emailContent: emailContent, result: result)
       } else {
         result(false)
       }
