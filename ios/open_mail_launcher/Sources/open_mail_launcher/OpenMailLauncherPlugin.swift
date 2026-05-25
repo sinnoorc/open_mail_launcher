@@ -77,7 +77,7 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
       availableApps.append([
         "name": "Default Mail App",
         "id": "mailto:",
-        "icon": nil as String?,
+        "icon": NSNull(),
         "isDefault": true
       ])
     }
@@ -91,7 +91,7 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
         availableApps.append([
           "name": app.name,
           "id": app.scheme,
-          "icon": nil as String?,
+          "icon": NSNull(),
           "isDefault": false
         ])
       }

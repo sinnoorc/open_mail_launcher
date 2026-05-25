@@ -16,7 +16,6 @@ and body while keeping the public Flutter API stable.
   s.author           = { 'sinnoorc' => 'https://github.com/sinnoorc' }
   s.source           = { :path => '.' }
   s.source_files = 'open_mail_launcher/Sources/open_mail_launcher/**/*.{h,m,swift}'
-  s.public_header_files = 'open_mail_launcher/Sources/open_mail_launcher/include/**/*.h'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 
