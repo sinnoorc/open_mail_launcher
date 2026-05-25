@@ -121,7 +121,7 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
         // Android will show the chooser
         val chooserIntent = Intent.createChooser(emailIntent, "Choose Email App")
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        copyAttachmentGrants(from = emailIntent, to = chooserIntent)
+        copyAttachmentGrants(source = emailIntent, target = chooserIntent)
         context.startActivity(chooserIntent)
         
         result.success(mapOf(
@@ -157,7 +157,7 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
       val emailIntent = createEmailIntent(emailContent)
       val chooserIntent = Intent.createChooser(emailIntent, "Send Email")
       chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      copyAttachmentGrants(from = emailIntent, to = chooserIntent)
+      copyAttachmentGrants(source = emailIntent, target = chooserIntent)
       
       if (canResolveActivity(emailIntent)) {
         context.startActivity(chooserIntent)
@@ -299,7 +299,7 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
     return clipData
   }
 
-  private fun copyAttachmentGrants(from source: Intent, to target: Intent) {
+  private fun copyAttachmentGrants(source: Intent, target: Intent) {
     source.clipData?.let { clipData ->
       target.clipData = clipData
       target.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
