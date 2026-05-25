@@ -59,28 +59,32 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
   
   private func getMailApps() -> [[String: Any]] {
     var availableApps: [[String: Any]] = []
-    
-    // Always include default Mail app
-    availableApps.append([
-      "name": "Mail",
-      "id": "mailto:",
-      "icon": nil,
-      "isDefault": true
-    ])
-    
-    // Check for other known mail apps
+
+    // Probe each known scheme. Apps whose schemes are absent from the
+    // consumer's Info.plist LSApplicationQueriesSchemes silently return
+    // false here (iOS privacy enforcement).
+    //
+    // Apple Mail is probed via its own scheme `message://` and only added
+    // when actually installed. Pre-v0.2.0 the plugin always returned Mail
+    // with id="mailto:", which (a) was wrong when the user had deleted
+    // Mail.app (allowed since iOS 10) and (b) opened the user's system
+    // default mailto handler — which since iOS 14 may be any third-party
+    // mail app, not Apple Mail.
     for app in OpenMailLauncherPlugin.knownMailApps {
       if let url = URL(string: app.scheme),
          UIApplication.shared.canOpenURL(url) {
         availableApps.append([
           "name": app.name,
           "id": app.scheme,
-          "icon": nil,
-          "isDefault": false
+          "icon": nil as String?,
+          // Apple Mail is the OS-bundled mail app; mark it as default
+          // when present. iOS exposes no public API for reading the
+          // user's chosen default mailto handler.
+          "isDefault": app.scheme == "message://"
         ])
       }
     }
-    
+
     return availableApps
   }
   
@@ -105,29 +109,24 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
       ])
       return
     }
-    
-    // If only one app (default Mail), open it
-    if let mailtoUrl = createMailtoURL(from: emailContent) {
-      if UIApplication.shared.canOpenURL(mailtoUrl) {
-        UIApplication.shared.open(mailtoUrl) { success in
-          result([
-            "didOpen": success,
-            "canOpen": true,
-            "options": mailApps
-          ])
-        }
-      } else {
-        result([
-          "didOpen": false,
-          "canOpen": false,
-          "options": []
-        ])
-      }
-    } else {
+
+    // Single app — open via its specific scheme.
+    guard let appId = mailApps[0]["id"] as? String,
+          let appUrl = createAppSpecificURL(scheme: appId, emailContent: emailContent),
+          UIApplication.shared.canOpenURL(appUrl) else {
       result([
         "didOpen": false,
         "canOpen": false,
         "options": []
+      ])
+      return
+    }
+
+    UIApplication.shared.open(appUrl) { success in
+      result([
+        "didOpen": success,
+        "canOpen": true,
+        "options": mailApps
       ])
     }
   }
@@ -223,6 +222,14 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
     // params for others — adding explicit builders requires verifying the
     // app's URL format on a real device. ProtonMail / Fastmail / Airmail
     // builders are TODO pending empirical verification (v0.3).
+
+    // Apple Mail is detected via `message://` but composes via `mailto:`
+    // (the `message://` scheme is for opening specific messages, not
+    // compose). Route accordingly.
+    if scheme == "message://" {
+      return createMailtoURL(from: emailContent)
+    }
+
     if scheme.contains("gmail") {
       return createGmailURL(emailContent: emailContent)
     } else if scheme.contains("outlook") {
