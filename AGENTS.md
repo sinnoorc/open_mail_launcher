@@ -75,16 +75,9 @@ Quirk: `openSpecificMailApp` flattens `appId` into the same map as the email con
 - **iOS consumer requirement**: every URL scheme in `knownMailApps` must be listed in the consuming app's `Info.plist` under `LSApplicationQueriesSchemes`, or `canOpenURL` returns `false` silently. Adding a new mail app means updating both `knownMailApps` AND the example app's `Info.plist` AND documenting it in `README.md`.
 - **Per-app URL builders** for Gmail / Outlook / Spark live in `createAppSpecificURL` (iOS only) — other schemes fall back to a `mailto:` string with the prefix swapped. New first-class iOS app support = add a `create<Name>URL` and branch in `createAppSpecificURL`.
 
-### iOS source layout (gotcha)
+### iOS source layout
 
-The Swift plugin source exists in **two places with identical contents**:
-
-- `ios/open_mail_launcher/Sources/open_mail_launcher/OpenMailLauncherPlugin.swift` — **canonical**. Both `Package.swift` (SPM) and `open_mail_launcher.podspec` (`s.source_files = 'open_mail_launcher/Sources/...'`) reference this path.
-- `ios/Classes/OpenMailLauncherPlugin.swift` — legacy CocoaPods location, **not referenced by the podspec**. It is effectively dead but currently kept in sync by hand.
-
-Edit the SPM path. If you change one, change both (or delete the legacy copy) — silent drift between them will confuse future readers.
-
-The privacy manifest has the same dual-location issue: `ios/Resources/PrivacyInfo.xcprivacy` (legacy) and `ios/open_mail_launcher/Sources/open_mail_launcher/PrivacyInfo.xcprivacy` (canonical, referenced by both `Package.swift` and `podspec`'s `resource_bundles`).
+Single-tree layout under `ios/open_mail_launcher/Sources/open_mail_launcher/`. Both `Package.swift` (SPM) and `open_mail_launcher.podspec` (`s.source_files = 'open_mail_launcher/Sources/open_mail_launcher/**/*.{h,m,swift}'`) reference this path. The privacy manifest sits next to the source as `PrivacyInfo.xcprivacy` and is bundled via `resource_bundles` in the podspec and `.process("PrivacyInfo.xcprivacy")` in `Package.swift`.
 
 ## Conventions
 
