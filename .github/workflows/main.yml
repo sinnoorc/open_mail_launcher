@@ -7,28 +7,28 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  dart:
+    name: Dart (format, analyze, test, pana)
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
+          channel: stable
           cache: true
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Format Code
+      - name: Format check
         run: dart format --output=none --set-exit-if-changed .
 
-      - name: Analyze Code
+      - name: Analyze
         run: flutter analyze
 
-      - name: Run Tests
+      - name: Test with coverage
         run: flutter test --coverage
 
       - name: Upload coverage to Codecov
@@ -36,3 +36,67 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage/lcov.info
+
+      - name: Pana (informational, does not fail CI)
+        continue-on-error: true
+        run: |
+          dart pub global activate pana
+          dart pub global run pana --no-warning --exit-code-threshold 0 .
+
+  android:
+    name: Android (example apk + plugin Kotlin tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve plugin deps
+        run: flutter pub get
+
+      - name: Resolve example deps
+        working-directory: example
+        run: flutter pub get
+
+      - name: Build example APK (debug)
+        working-directory: example
+        run: flutter build apk --debug
+
+      - name: Run plugin Kotlin unit tests
+        working-directory: example/android
+        run: ./gradlew open_mail_launcher:testDebugUnitTest --stacktrace
+
+  ios:
+    name: iOS (pod lib lint + example simulator build)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve plugin deps
+        run: flutter pub get
+
+      - name: Resolve example deps
+        working-directory: example
+        run: flutter pub get
+
+      - name: Pod lib lint
+        run: pod lib lint ios/open_mail_launcher.podspec --allow-warnings
+
+      - name: Build example for iOS simulator
+        working-directory: example
+        run: flutter build ios --debug --no-codesign --simulator
