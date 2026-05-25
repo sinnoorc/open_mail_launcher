@@ -4,14 +4,16 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'open_mail_launcher'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.version          = '0.2.0'
+  s.summary          = 'Flutter plugin for opening installed mail apps.'
   s.description      = <<-DESC
-A new Flutter plugin project.
+Open Mail Launcher discovers installed email apps on Android and iOS, opens a
+mail app or app picker, and composes emails with pre-filled recipients, subject,
+and body while keeping the public Flutter API stable.
                        DESC
-  s.homepage         = 'http://example.com'
-  s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.homepage         = 'https://github.com/sinnoorc/open_mail_launcher'
+  s.license          = { :type => 'MIT', :file => '../LICENSE' }
+  s.author           = { 'sinnoorc' => 'https://github.com/sinnoorc' }
   s.source           = { :path => '.' }
   s.source_files = 'open_mail_launcher/Sources/open_mail_launcher/**/*.{h,m,swift}'
   s.public_header_files = 'open_mail_launcher/Sources/open_mail_launcher/include/**/*.h'

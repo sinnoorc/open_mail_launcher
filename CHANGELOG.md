@@ -14,8 +14,8 @@ see **Changed** below.
   picker.
 - **iOS:** First-class compose-URL builder for Yahoo Mail
   (`ymail://mail/compose?to=…&cc=…&bcc=…&subject=…&body=…`).
-- **Models:** `==`, `hashCode`, and `@immutable` on `EmailContent` and
-  `OpenMailAppResult`. `MailApp` already had them.
+- **Models:** `==`, `hashCode`, and `@immutable` on `EmailContent`,
+  `MailApp`, and `OpenMailAppResult`.
 - **Lints:** Stricter analysis — `strict-casts`, `strict-inference`,
   `strict-raw-types`, plus `avoid_dynamic_calls`, `unawaited_futures`,
   `prefer_const_*`, `require_trailing_commas`, `prefer_final_locals`,
@@ -39,9 +39,12 @@ see **Changed** below.
 - **iOS deployment target:** 12.0 → 13.0 in podspec, `Package.swift`,
   and the example's `Runner.xcodeproj`. Flutter dropped iOS 12 long
   ago; the previous declaration was advisory at best.
-- **Android tooling:** AGP `8.7.3` → `8.9.0`, Kotlin `2.1.0` → `2.2.0`.
-  Stays on the 8.x line so consumers keep their Java 11 toolchain
-  (AGP 9 would force Java 17).
+- **Android tooling:** plugin AGP `8.9.0` → `8.11.1`; example AGP
+  `8.7.3` → `8.11.1`, Kotlin `2.1.0` → `2.2.20`, and Gradle `8.12`
+  → `8.14`. Stays on the 8.x line so consumers avoid AGP 9 churn.
+- **Android Kotlin integration:** migrated plugin and example away from
+  explicitly applying the Kotlin Gradle Plugin where Flutter Built-in Kotlin
+  supplies it.
 - **Method-channel envelope (internal):** `openSpecificMailApp` now
   sends `{'appId': …, 'emailContent': {…}?}` instead of flattening
   `appId` into the email-content map. Removes a silent-shadowing risk
@@ -59,9 +62,9 @@ see **Changed** below.
   now appears only when `canOpenURL("message://")` succeeds (i.e.,
   Mail.app is actually installed). Its `id` is `message://` (was
   `mailto:`) and `isDefault` is `false` (was `true`).
-- **Android attachment intent:** MIME `*/*` → `message/rfc822` so the
-  chooser surfaces only mail apps, not every share target on the
-  device. Observable behavior change for callers using `attachments`.
+- **Android attachment intent:** MIME `*/*` → `message/rfc822` and
+  discovery now resolves the actual attachment intent. The documented
+  attachment contract is Android `content://` URIs.
 
 ### Fixed
 
@@ -73,8 +76,8 @@ see **Changed** below.
   Mail.app" with "the user's chosen default mailto handler". Picker
   selection now reliably opens the named app. (C-2)
 - **Android:** `content://` attachment URIs now carry
-  `FLAG_GRANT_READ_URI_PERMISSION`, so receiving mail apps can
-  actually read them instead of hitting `SecurityException`. (C-13)
+  `FLAG_GRANT_READ_URI_PERMISSION` plus `ClipData`, so receiving mail apps
+  can actually read them instead of hitting `SecurityException`. (C-13)
 
 ### Removed
 
@@ -96,8 +99,8 @@ see **Changed** below.
 - Replaced stale example widget test (searched for a "Running on:"
   widget that doesn't exist) with `HomePage` smoke tests.
 - Removed unused `import MessageUI` from the iOS plugin.
-- Added `FlutterFramework` SPM dependency to `Package.swift` (required
-  by Flutter ≥3.32 plugin authoring rules).
+- Added `FlutterFramework` SPM dependency to `Package.swift` for Flutter
+  3.44+ SPM plugin readiness.
 - Narrowed the Android `<queries>` block: removed the unused
   `ACTION_SEND` intent, narrowed `SEND_MULTIPLE` MIME from `*/*` to
   `message/rfc822` to match what the plugin actually sends.

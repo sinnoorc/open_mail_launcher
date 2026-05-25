@@ -1,16 +1,23 @@
-# open_mail_launcher_example
+# Open Mail Launcher Example
 
-Demonstrates how to use the open_mail_launcher plugin.
+Demonstrates the public `open_mail_launcher` API:
 
-## Getting Started
+- checking whether a mail app is available
+- listing installed mail apps
+- composing email content
+- opening the default app or a selected app
+- handling no-app and multiple-app results
 
-This project is a starting point for a Flutter application.
+## Run
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter pub get
+flutter run
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+On iOS, `Runner/Info.plist` includes the `LSApplicationQueriesSchemes` list
+used by the plugin demo. On Android, package visibility queries are provided by
+the plugin manifest.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Android attachment examples should use readable `content://` URIs, not plain
+file paths.
