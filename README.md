@@ -73,24 +73,20 @@ Add the full set the plugin probes:
     <string>ymail</string>
     <string>readdle-spark</string>
     <string>airmail</string>
-    <string>x-dispatch</string>
     <string>fastmail</string>
     <string>superhuman</string>
     <string>protonmail</string>
     <string>hey</string>
     <string>canarymail</string>
     <string>spike</string>
-    <string>newton</string>
     <string>polymail</string>
-    <string>typeapp</string>
     <string>bluemail</string>
     <string>edison</string>
-    <string>twobird</string>
 </array>
 ```
 
 iOS limits `LSApplicationQueriesSchemes` to a hard maximum of **50 entries**
-per app — listing all 20 above leaves 30 slots free for other features.
+per app — listing all 16 above leaves 34 slots free for other features.
 
 If you don't care about a specific mail app, you can omit its scheme to keep
 your plist smaller — detection for that app will return `false` regardless of

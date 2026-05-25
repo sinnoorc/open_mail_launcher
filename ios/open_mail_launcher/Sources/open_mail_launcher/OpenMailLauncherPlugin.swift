@@ -3,6 +3,12 @@ import UIKit
 import MessageUI
 
 public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
+  // Apps probed via canOpenURL. Each entry requires its scheme to be
+  // listed in the consuming app's Info.plist LSApplicationQueriesSchemes;
+  // schemes absent from the consumer's plist silently return false.
+  //
+  // Removed in v0.2.0 (audit C-3): Newton (shutdown 2024), Twobird (shutdown 2022),
+  // Dispatch (no updates since ~2016), TypeApp (alias of BlueMail).
   private static let knownMailApps: [(name: String, scheme: String)] = [
     ("Mail", "message://"),
     ("Gmail", "googlegmail://"),
@@ -10,19 +16,15 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
     ("Yahoo Mail", "ymail://"),
     ("Spark", "readdle-spark://"),
     ("Airmail", "airmail://"),
-    ("Dispatch", "x-dispatch://"),
     ("Fastmail", "fastmail://"),
     ("Superhuman", "superhuman://"),
     ("ProtonMail", "protonmail://"),
     ("Hey", "hey://"),
     ("Canary Mail", "canarymail://"),
     ("Spike", "spike://"),
-    ("Newton", "newton://"),
     ("Polymail", "polymail://"),
-    ("TypeApp", "typeapp://"),
     ("BlueMail", "bluemail://"),
-    ("Edison Mail", "edison://"),
-    ("Twobird", "twobird://")
+    ("Edison Mail", "edison://")
   ]
   
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -214,24 +216,62 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
   }
   
   private func createAppSpecificURL(scheme: String, emailContent: [String: Any]?) -> URL? {
-    // Different mail apps have different URL schemes
-    // This is a simplified version - each app may have its own format
-    
+    // First-class compose URL builders for apps with documented URL schemes.
+    //
+    // For everything else we fall back to substituting `mailto:` with the
+    // app's scheme. This works for some apps and silently drops compose
+    // params for others — adding explicit builders requires verifying the
+    // app's URL format on a real device. ProtonMail / Fastmail / Airmail
+    // builders are TODO pending empirical verification (v0.3).
     if scheme.contains("gmail") {
       return createGmailURL(emailContent: emailContent)
     } else if scheme.contains("outlook") {
       return createOutlookURL(emailContent: emailContent)
     } else if scheme.contains("spark") {
       return createSparkURL(emailContent: emailContent)
+    } else if scheme == "ymail://" {
+      return createYahooURL(emailContent: emailContent)
     } else {
-      // For other apps, try the mailto approach with their scheme
       if var urlString = createMailtoURL(from: emailContent)?.absoluteString {
         urlString = urlString.replacingOccurrences(of: "mailto:", with: scheme)
         return URL(string: urlString)
       }
     }
-    
+
     return URL(string: scheme)
+  }
+
+  private func createYahooURL(emailContent: [String: Any]?) -> URL? {
+    // Yahoo Mail iOS app accepts compose params under the `ymail://mail/compose`
+    // path with `to`, `cc`, `bcc`, `subject`, `body` keys.
+    var urlString = "ymail://mail/compose"
+    var params: [String] = []
+
+    if let emailContent = emailContent {
+      if let to = emailContent["to"] as? [String], !to.isEmpty {
+        params.append("to=\(to.joined(separator: ","))")
+      }
+      if let cc = emailContent["cc"] as? [String], !cc.isEmpty {
+        params.append("cc=\(cc.joined(separator: ","))")
+      }
+      if let bcc = emailContent["bcc"] as? [String], !bcc.isEmpty {
+        params.append("bcc=\(bcc.joined(separator: ","))")
+      }
+      if let subject = emailContent["subject"] as? String,
+         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+        params.append("subject=\(encodedSubject)")
+      }
+      if let body = emailContent["body"] as? String,
+         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+        params.append("body=\(encodedBody)")
+      }
+    }
+
+    if !params.isEmpty {
+      urlString += "?" + params.joined(separator: "&")
+    }
+
+    return URL(string: urlString)
   }
   
   private func createGmailURL(emailContent: [String: Any]?) -> URL? {
