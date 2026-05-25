@@ -5,7 +5,7 @@
 - [x] Preserve dirty detached worktree in a named safety stash.
 - [x] Create `codex/audit-upgrade-open-mail-launcher` from fresh `origin/main`.
 - [x] Fix release metadata and documentation drift.
-- [ ] Fix iOS compose URL builders.
+- [x] Fix iOS compose URL builders.
 - [ ] Fix Android attachment intent handling.
 - [ ] Harden Dart models, picker icon decoding, and platform-channel tests.
 - [ ] Commit Flutter 3.44 example platform migrations.
