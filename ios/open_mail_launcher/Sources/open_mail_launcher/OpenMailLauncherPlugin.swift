@@ -59,16 +59,31 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
   private func getMailApps() -> [[String: Any]] {
     var availableApps: [[String: Any]] = []
 
+    // Prepend the synthesized "Default Mail App" entry: id="mailto:"
+    // routes through UIApplication.open which the system delivers to
+    // the user's chosen default mail handler (iOS 14+ Settings > Default
+    // Apps > Mail). Always available when any app on the device handles
+    // mailto — which is the case whenever any mail app is installed.
+    //
+    // Marked isDefault=true; on iOS this is the only entry whose
+    // identity reflects user preference. Apple Mail (message://) below
+    // is marked isDefault=false: it's the OS-bundled mail app, but if
+    // the user has set Gmail (or anything else) as the default mailto
+    // handler then Apple Mail is no longer "the default" in any
+    // meaningful sense.
+    if let mailtoUrl = URL(string: "mailto:"),
+       UIApplication.shared.canOpenURL(mailtoUrl) {
+      availableApps.append([
+        "name": "Default Mail App",
+        "id": "mailto:",
+        "icon": nil as String?,
+        "isDefault": true
+      ])
+    }
+
     // Probe each known scheme. Apps whose schemes are absent from the
     // consumer's Info.plist LSApplicationQueriesSchemes silently return
     // false here (iOS privacy enforcement).
-    //
-    // Apple Mail is probed via its own scheme `message://` and only added
-    // when actually installed. Pre-v0.2.0 the plugin always returned Mail
-    // with id="mailto:", which (a) was wrong when the user had deleted
-    // Mail.app (allowed since iOS 10) and (b) opened the user's system
-    // default mailto handler — which since iOS 14 may be any third-party
-    // mail app, not Apple Mail.
     for app in OpenMailLauncherPlugin.knownMailApps {
       if let url = URL(string: app.scheme),
          UIApplication.shared.canOpenURL(url) {
@@ -76,10 +91,7 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
           "name": app.name,
           "id": app.scheme,
           "icon": nil as String?,
-          // Apple Mail is the OS-bundled mail app; mark it as default
-          // when present. iOS exposes no public API for reading the
-          // user's chosen default mailto handler.
-          "isDefault": app.scheme == "message://"
+          "isDefault": false
         ])
       }
     }
@@ -221,6 +233,12 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
     // params for others — adding explicit builders requires verifying the
     // app's URL format on a real device. ProtonMail / Fastmail / Airmail
     // builders are TODO pending empirical verification (v0.3).
+
+    // The synthesized "Default Mail App" entry uses mailto: directly,
+    // delegating routing to the user's iOS default handler.
+    if scheme == "mailto:" {
+      return createMailtoURL(from: emailContent)
+    }
 
     // Apple Mail is detected via `message://` but composes via `mailto:`
     // (the `message://` scheme is for opening specific messages, not

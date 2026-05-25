@@ -3,7 +3,13 @@ class MailApp {
   /// The display name of the email app
   final String name;
 
-  /// The package name (Android) or URL scheme (iOS) of the email app
+  /// Stable identifier for the mail app. Format depends on platform:
+  ///
+  /// - **Android**: package name (e.g. `com.google.android.gm`).
+  /// - **iOS**: URL scheme with trailing `://` (e.g. `googlegmail://`).
+  ///   The special id `mailto:` represents the synthesized "Default Mail App"
+  ///   entry — opening it routes through the user's iOS-level default mail
+  ///   handler (Settings > Default Apps > Mail).
   final String id;
 
   /// The app icon as base64 encoded string (optional)
