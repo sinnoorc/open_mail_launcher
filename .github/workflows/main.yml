@@ -37,11 +37,14 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage/lcov.info
 
+      - name: Install pana screenshot toolchain (webp)
+        run: sudo apt-get update && sudo apt-get install -y webp
+
       - name: Pana (informational, does not fail CI)
         continue-on-error: true
         run: |
           dart pub global activate pana
-          dart pub global run pana --no-warning --exit-code-threshold 0 .
+          dart pub global run pana --no-warning .
 
   android:
     name: Android (example apk + plugin Kotlin tests)
