@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "open_mail_launcher",
     platforms: [
-        .iOS("12.0")
+        .iOS("13.0")
     ],
     products: [
         .library(name: "open-mail-launcher", targets: ["open_mail_launcher"])
