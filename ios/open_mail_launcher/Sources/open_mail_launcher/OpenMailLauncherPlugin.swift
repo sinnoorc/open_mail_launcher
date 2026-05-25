@@ -77,7 +77,7 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
       availableApps.append([
         "name": "Default Mail App",
         "id": "mailto:",
-        "icon": nil as String?,
+        "icon": NSNull(),
         "isDefault": true
       ])
     }
@@ -91,7 +91,7 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
         availableApps.append([
           "name": app.name,
           "id": app.scheme,
-          "icon": nil as String?,
+          "icon": NSNull(),
           "isDefault": false
         ])
       }
@@ -183,47 +183,11 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
   }
   
   private func createMailtoURL(from emailContent: [String: Any]?) -> URL? {
-    var urlString = "mailto:"
-    
-    guard let emailContent = emailContent else {
-      return URL(string: urlString)
-    }
-    
-    // Add recipients
-    if let to = emailContent["to"] as? [String] {
-      urlString += to.joined(separator: ",")
-    }
-    
-    var params: [String] = []
-    
-    // Add CC
-    if let cc = emailContent["cc"] as? [String], !cc.isEmpty {
-      params.append("cc=\(cc.joined(separator: ","))")
-    }
-    
-    // Add BCC
-    if let bcc = emailContent["bcc"] as? [String], !bcc.isEmpty {
-      params.append("bcc=\(bcc.joined(separator: ","))")
-    }
-    
-    // Add subject
-    if let subject = emailContent["subject"] as? String,
-       let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-      params.append("subject=\(encodedSubject)")
-    }
-    
-    // Add body
-    if let body = emailContent["body"] as? String,
-       let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-      params.append("body=\(encodedBody)")
-    }
-    
-    // Append parameters
-    if !params.isEmpty {
-      urlString += "?" + params.joined(separator: "&")
-    }
-    
-    return URL(string: urlString)
+    let to = stringList("to", from: emailContent)
+    return createURL(
+      base: "mailto:\(to.joined(separator: ","))",
+      queryItems: queryItems(from: emailContent, includeTo: false)
+    )
   }
   
   private func createAppSpecificURL(scheme: String, emailContent: [String: Any]?) -> URL? {
@@ -269,112 +233,107 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
   private func createYahooURL(emailContent: [String: Any]?) -> URL? {
     // Yahoo Mail iOS app accepts compose params under the `ymail://mail/compose`
     // path with `to`, `cc`, `bcc`, `subject`, `body` keys.
-    var urlString = "ymail://mail/compose"
-    var params: [String] = []
-
-    if let emailContent = emailContent {
-      if let to = emailContent["to"] as? [String], !to.isEmpty {
-        params.append("to=\(to.joined(separator: ","))")
-      }
-      if let cc = emailContent["cc"] as? [String], !cc.isEmpty {
-        params.append("cc=\(cc.joined(separator: ","))")
-      }
-      if let bcc = emailContent["bcc"] as? [String], !bcc.isEmpty {
-        params.append("bcc=\(bcc.joined(separator: ","))")
-      }
-      if let subject = emailContent["subject"] as? String,
-         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-        params.append("subject=\(encodedSubject)")
-      }
-      if let body = emailContent["body"] as? String,
-         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-        params.append("body=\(encodedBody)")
-      }
-    }
-
-    if !params.isEmpty {
-      urlString += "?" + params.joined(separator: "&")
-    }
-
-    return URL(string: urlString)
+    return createURL(
+      base: "ymail://mail/compose",
+      queryItems: queryItems(from: emailContent)
+    )
   }
   
   private func createGmailURL(emailContent: [String: Any]?) -> URL? {
-    var urlString = "googlegmail://co"
-    var params: [String] = []
-    
-    if let emailContent = emailContent {
-      if let to = emailContent["to"] as? [String], !to.isEmpty {
-        params.append("to=\(to.joined(separator: ","))")
-      }
-      
-      if let cc = emailContent["cc"] as? [String], !cc.isEmpty {
-        params.append("cc=\(cc.joined(separator: ","))")
-      }
-      
-      if let bcc = emailContent["bcc"] as? [String], !bcc.isEmpty {
-        params.append("bcc=\(bcc.joined(separator: ","))")
-      }
-      
-      if let subject = emailContent["subject"] as? String,
-         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-        params.append("subject=\(encodedSubject)")
-      }
-      
-      if let body = emailContent["body"] as? String,
-         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-        params.append("body=\(encodedBody)")
-      }
-    }
-    
-    if !params.isEmpty {
-      urlString += "?" + params.joined(separator: "&")
-    }
-    
-    return URL(string: urlString)
+    return createURL(
+      base: "googlegmail:///co",
+      queryItems: queryItems(from: emailContent)
+    )
   }
   
   private func createOutlookURL(emailContent: [String: Any]?) -> URL? {
-    var urlString = "ms-outlook://compose"
-    var params: [String] = []
-    
-    if let emailContent = emailContent {
-      if let to = emailContent["to"] as? [String], !to.isEmpty {
-        params.append("to=\(to.joined(separator: ","))")
-      }
-      
-      if let cc = emailContent["cc"] as? [String], !cc.isEmpty {
-        params.append("cc=\(cc.joined(separator: ","))")
-      }
-      
-      if let bcc = emailContent["bcc"] as? [String], !bcc.isEmpty {
-        params.append("bcc=\(bcc.joined(separator: ","))")
-      }
-      
-      if let subject = emailContent["subject"] as? String,
-         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-        params.append("subject=\(encodedSubject)")
-      }
-      
-      if let body = emailContent["body"] as? String,
-         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-        params.append("body=\(encodedBody)")
-      }
-    }
-    
-    if !params.isEmpty {
-      urlString += "?" + params.joined(separator: "&")
-    }
-    
-    return URL(string: urlString)
+    return createURL(
+      base: "ms-outlook://compose",
+      queryItems: queryItems(from: emailContent)
+    )
   }
   
   private func createSparkURL(emailContent: [String: Any]?) -> URL? {
-    // Spark uses a similar format to mailto
-    if let mailtoUrl = createMailtoURL(from: emailContent) {
-      let sparkUrl = mailtoUrl.absoluteString.replacingOccurrences(of: "mailto:", with: "readdle-spark://compose?recipient=")
-      return URL(string: sparkUrl)
+    return createURL(
+      base: "readdle-spark://compose",
+      queryItems: queryItems(
+        from: emailContent,
+        toKey: "recipient",
+        includeCcBcc: false
+      )
+    )
+  }
+
+  private func createURL(base: String, queryItems: [URLQueryItem]) -> URL? {
+    guard var components = URLComponents(string: base) else {
+      return URL(string: base)
     }
-    return URL(string: "readdle-spark://")
+
+    components.queryItems = queryItems.isEmpty ? nil : queryItems
+    return components.url
+  }
+
+  private func queryItems(
+    from emailContent: [String: Any]?,
+    toKey: String = "to",
+    includeTo: Bool = true,
+    includeCcBcc: Bool = true
+  ) -> [URLQueryItem] {
+    var items: [URLQueryItem] = []
+
+    appendJoinedQueryItem(
+      to: &items,
+      name: toKey,
+      values: includeTo ? stringList("to", from: emailContent) : []
+    )
+
+    if includeCcBcc {
+      appendJoinedQueryItem(
+        to: &items,
+        name: "cc",
+        values: stringList("cc", from: emailContent)
+      )
+      appendJoinedQueryItem(
+        to: &items,
+        name: "bcc",
+        values: stringList("bcc", from: emailContent)
+      )
+    }
+
+    if let subject = stringValue("subject", from: emailContent) {
+      items.append(URLQueryItem(name: "subject", value: subject))
+    }
+
+    if let body = stringValue("body", from: emailContent) {
+      items.append(URLQueryItem(name: "body", value: body))
+    }
+
+    return items
+  }
+
+  private func appendJoinedQueryItem(
+    to items: inout [URLQueryItem],
+    name: String,
+    values: [String]
+  ) {
+    if !values.isEmpty {
+      items.append(
+        URLQueryItem(name: name, value: values.joined(separator: ","))
+      )
+    }
+  }
+
+  private func stringList(_ key: String, from emailContent: [String: Any]?) -> [String] {
+    guard let values = emailContent?[key] as? [String] else {
+      return []
+    }
+    return values.filter { !$0.isEmpty }
+  }
+
+  private func stringValue(_ key: String, from emailContent: [String: Any]?) -> String? {
+    guard let value = emailContent?[key] as? String, !value.isEmpty else {
+      return nil
+    }
+    return value
   }
 }

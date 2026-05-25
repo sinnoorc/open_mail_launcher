@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:open_mail_launcher/open_mail_launcher.dart';
 import 'package:open_mail_launcher/open_mail_launcher_method_channel.dart';
@@ -137,10 +138,38 @@ void main() {
   test('MailApp equality works correctly', () {
     const app1 = MailApp(name: 'Gmail', id: 'com.google.android.gm');
     const app2 = MailApp(name: 'Gmail', id: 'com.google.android.gm');
+    const app2WithIcon = MailApp(
+      name: 'Gmail',
+      id: 'com.google.android.gm',
+      icon: 'data:image/png;base64,AA==',
+    );
     const app3 = MailApp(name: 'Outlook', id: 'com.microsoft.office.outlook');
 
     expect(app1, equals(app2));
+    expect(app1, isNot(equals(app2WithIcon)));
     expect(app1, isNot(equals(app3)));
+  });
+
+  testWidgets('MailAppPickerDialog falls back for malformed icon data', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: MailAppPickerDialog(
+            mailApps: [
+              MailApp(
+                name: 'Broken icon',
+                id: 'broken',
+                icon: 'not-a-data-uri',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byIcon(Icons.email), findsOneWidget);
   });
 
   test('OpenMailAppResult factories work correctly', () {

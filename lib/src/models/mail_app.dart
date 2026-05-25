@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
+
 /// Represents an email application installed on the device
+@immutable
 class MailApp {
   /// The display name of the email app
   final String name;
@@ -41,7 +44,10 @@ class MailApp {
   }
 
   @override
-  String toString() => 'MailApp(name: $name, id: $id, isDefault: $isDefault)';
+  String toString() {
+    return 'MailApp(name: $name, id: $id, icon: $icon, '
+        'isDefault: $isDefault)';
+  }
 
   @override
   bool operator ==(Object other) {
@@ -50,9 +56,10 @@ class MailApp {
     return other is MailApp &&
         other.name == name &&
         other.id == id &&
+        other.icon == icon &&
         other.isDefault == isDefault;
   }
 
   @override
-  int get hashCode => Object.hash(name, id, isDefault);
+  int get hashCode => Object.hash(name, id, icon, isDefault);
 }

@@ -19,9 +19,9 @@ A Flutter plugin to open email applications on Android and iOS. This plugin allo
 ✅ **Email app discovery**: Get list of installed email apps  
 ✅ **Smart app opening**: Automatic handling of single vs multiple apps  
 ✅ **Pre-filled composition**: Support for To, CC, BCC, subject, and body  
-✅ **Attachment support**: File attachments on Android  
+✅ **Attachment support**: Android `content://` URI attachments  
 ✅ **Picker dialog**: Built-in UI for selecting from multiple apps  
-✅ **Swift Package Manager**: Full SPM support for iOS (iOS 12.0+)
+✅ **Swift Package Manager**: Full SPM support for iOS (iOS 13.0+)
 
 ## Screenshots
 
@@ -38,7 +38,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  open_mail_launcher: ^0.1.0
+  open_mail_launcher: ^0.2.0
 ```
 
 Then run:
@@ -51,7 +51,14 @@ flutter pub get
 
 ### Android
 
-No additional setup required. The plugin automatically handles email intent queries for Android 11+ compatibility.
+No additional setup required. The plugin contributes the Android 11+
+package-visibility `<queries>` entries it needs through manifest merging.
+
+For attachments, pass Android `content://` URIs that the receiving mail app can
+read. Plain file-system paths are not reliable on modern Android and are not
+converted by the plugin. If the URI comes from your app's `FileProvider`, grant
+read access before launching; the plugin adds the standard read flags to the
+outgoing email intent.
 
 ### iOS
 
@@ -169,10 +176,13 @@ if (result.didOpen) {
 List<MailApp> apps = await OpenMailLauncher.getMailApps();
 
 // Find and open Gmail specifically
-MailApp? gmail = apps.firstWhere(
-  (app) => app.name.toLowerCase().contains('gmail'),
-  orElse: () => null,
-);
+MailApp? gmail;
+for (final app in apps) {
+  if (app.name.toLowerCase().contains('gmail')) {
+    gmail = app;
+    break;
+  }
+}
 
 if (gmail != null) {
   bool success = await OpenMailLauncher.openSpecificMailApp(
@@ -196,9 +206,12 @@ EmailContent(
   subject: 'Email Subject',                // Email subject
   body: 'Email body content',              // Email body
   isHtml: false,                          // Whether body is HTML
-  attachments: ['path/to/file.pdf'],      // File attachments (Android)
+  attachments: ['content://...'],         // Android content URI attachments
 )
 ```
+
+Android attachments must be readable `content://` URIs. The plugin does not
+turn plain paths such as `/sdcard/file.pdf` into shareable content URIs.
 
 ### MailApp
 
@@ -269,7 +282,7 @@ try {
 ### Android
 
 - Shows native app chooser when multiple apps are available
-- Supports file attachments
+- Supports `content://` URI attachments
 - Can detect default email app
 - Uses package manager to discover apps
 
