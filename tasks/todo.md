@@ -7,7 +7,7 @@
 - [x] Fix release metadata and documentation drift.
 - [x] Fix iOS compose URL builders.
 - [x] Fix Android attachment intent handling.
-- [ ] Harden Dart models, picker icon decoding, and platform-channel tests.
+- [x] Harden Dart models, picker icon decoding, and platform-channel tests.
 - [ ] Commit Flutter 3.44 example platform migrations.
 - [ ] Polish CI tooling versions.
 - [ ] Run verification commands and record results.

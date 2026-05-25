@@ -1,5 +1,7 @@
 library;
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import 'open_mail_launcher_platform_interface.dart';
@@ -133,10 +135,11 @@ class MailAppPickerDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: mailApps.map((mailApp) {
+            final iconBytes = _decodeMailAppIcon(mailApp.icon);
             return ListTile(
-              leading: mailApp.icon != null
+              leading: iconBytes != null
                   ? Image.memory(
-                      Uri.parse(mailApp.icon!).data!.contentAsBytes(),
+                      iconBytes,
                       width: 32,
                       height: 32,
                       errorBuilder: (_, _, _) => const Icon(Icons.email),
@@ -156,5 +159,17 @@ class MailAppPickerDialog extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+Uint8List? _decodeMailAppIcon(String? icon) {
+  if (icon == null || icon.isEmpty) {
+    return null;
+  }
+
+  try {
+    return Uri.tryParse(icon)?.data?.contentAsBytes();
+  } on FormatException {
+    return null;
   }
 }

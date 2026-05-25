@@ -3,13 +3,19 @@ import 'package:flutter/foundation.dart';
 /// Represents the content for composing an email
 @immutable
 class EmailContent {
-  /// List of email addresses for the "To" field
+  /// List of email addresses for the "To" field.
+  ///
+  /// Keep this list immutable after construction.
   final List<String> to;
 
-  /// List of email addresses for the "CC" field
+  /// List of email addresses for the "CC" field.
+  ///
+  /// Keep this list immutable after construction.
   final List<String> cc;
 
-  /// List of email addresses for the "BCC" field
+  /// List of email addresses for the "BCC" field.
+  ///
+  /// Keep this list immutable after construction.
   final List<String> bcc;
 
   /// The email subject
@@ -21,7 +27,9 @@ class EmailContent {
   /// Whether the body is HTML formatted
   final bool isHtml;
 
-  /// List of file paths to attach
+  /// Android `content://` URI strings to attach.
+  ///
+  /// Keep this list immutable after construction.
   final List<String> attachments;
 
   const EmailContent({

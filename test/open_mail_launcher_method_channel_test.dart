@@ -9,10 +9,13 @@ void main() {
   final MethodChannelOpenMailLauncher platform =
       MethodChannelOpenMailLauncher();
   const MethodChannel channel = MethodChannel('open_mail_launcher');
+  final methodCalls = <MethodCall>[];
 
   setUp(() {
+    methodCalls.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          methodCalls.add(methodCall);
           switch (methodCall.method) {
             case 'getMailApps':
               return [
@@ -79,9 +82,26 @@ void main() {
     expect(result.options.length, 2);
   });
 
-  test('openSpecificMailApp', () async {
-    final success = await platform.openSpecificMailApp(appId: 'test.app');
+  test('openSpecificMailApp sends nested emailContent envelope', () async {
+    const emailContent = EmailContent(
+      to: ['test@example.com'],
+      subject: 'Test',
+      body: 'Test email',
+    );
+
+    final success = await platform.openSpecificMailApp(
+      appId: 'test.app',
+      emailContent: emailContent,
+    );
+
     expect(success, true);
+
+    final call = methodCalls.singleWhere(
+      (methodCall) => methodCall.method == 'openSpecificMailApp',
+    );
+    final arguments = call.arguments as Map<Object?, Object?>;
+    expect(arguments['appId'], 'test.app');
+    expect(arguments['emailContent'], emailContent.toMap());
   });
 
   test('composeEmail', () async {
