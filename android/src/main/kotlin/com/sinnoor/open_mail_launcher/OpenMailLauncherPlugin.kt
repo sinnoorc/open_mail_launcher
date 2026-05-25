@@ -216,15 +216,23 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
     // Handle attachments if any
     val attachments = emailContent["attachments"] as? List<String> ?: emptyList()
     if (attachments.isNotEmpty()) {
-      // For attachments, we need ACTION_SEND_MULTIPLE
+      // For attachments switch to ACTION_SEND_MULTIPLE with `message/rfc822`
+      // MIME so the chooser surfaces only email apps. `*/*` (pre-v0.2.0)
+      // matched every share target on the device including Drive, Photos,
+      // Messenger, Bluetooth — see audit C-12.
+      //
+      // FLAG_GRANT_READ_URI_PERMISSION is required for content:// URIs from
+      // the caller's private file provider — without it the receiving mail
+      // app gets SecurityException when trying to read the attachment.
       val sendIntent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-        type = "*/*"
+        type = "message/rfc822"
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         putExtra(Intent.EXTRA_EMAIL, to.toTypedArray())
         if (cc.isNotEmpty()) putExtra(Intent.EXTRA_CC, cc.toTypedArray())
         if (bcc.isNotEmpty()) putExtra(Intent.EXTRA_BCC, bcc.toTypedArray())
         if (!subject.isNullOrEmpty()) putExtra(Intent.EXTRA_SUBJECT, subject)
         if (!body.isNullOrEmpty()) putExtra(Intent.EXTRA_TEXT, body)
-        
+
         val uris = attachments.mapNotNull { path ->
           try {
             Uri.parse(path)
@@ -232,14 +240,14 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
             null
           }
         }
-        
+
         if (uris.isNotEmpty()) {
           putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
         }
       }
       return sendIntent
     }
-    
+
     return intent
   }
 
