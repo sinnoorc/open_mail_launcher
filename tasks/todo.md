@@ -10,8 +10,17 @@
 - [x] Harden Dart models, picker icon decoding, and platform-channel tests.
 - [x] Commit Flutter 3.44 example platform migrations.
 - [x] Polish CI tooling versions.
-- [ ] Run verification commands and record results.
+- [x] Run verification commands and record results.
 
 ## Review
 
-Pending implementation and verification.
+- `dart format --output=none --set-exit-if-changed .`: pass.
+- Root `flutter analyze`: pass.
+- Root `flutter test`: pass.
+- `flutter pub publish --dry-run`: pass, 0 warnings.
+- Example `flutter analyze`: pass.
+- Example `flutter test`: pass.
+- Example Android debug APK build: pass.
+- Example iOS simulator build: pass.
+- `JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" ./gradlew open_mail_launcher:testDebugUnitTest --stacktrace`: pass.
+- `pod lib lint ios/open_mail_launcher.podspec --allow-warnings`: pass with the expected local-path `s.source` warning.
