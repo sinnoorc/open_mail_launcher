@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
+
 import 'mail_app.dart';
 
 /// Result of attempting to open a mail app
+@immutable
 class OpenMailAppResult {
   /// Whether a mail app was successfully opened
   final bool didOpen;
@@ -52,4 +55,18 @@ class OpenMailAppResult {
     return 'OpenMailAppResult(didOpen: $didOpen, canOpen: $canOpen, '
         'options: ${options.length}, error: $error)';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is OpenMailAppResult &&
+        other.didOpen == didOpen &&
+        other.canOpen == canOpen &&
+        listEquals(other.options, options) &&
+        other.error == error;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(didOpen, canOpen, Object.hashAll(options), error);
 }

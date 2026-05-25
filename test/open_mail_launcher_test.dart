@@ -149,9 +149,9 @@ void main() {
     expect(successResult.canOpen, true);
 
     final multipleResult = OpenMailAppResult.multiple(
-      options: [
-        const MailApp(name: 'App1', id: 'app1'),
-        const MailApp(name: 'App2', id: 'app2'),
+      options: const [
+        MailApp(name: 'App1', id: 'app1'),
+        MailApp(name: 'App2', id: 'app2'),
       ],
     );
     expect(multipleResult.didOpen, false);

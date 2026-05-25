@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
+
 /// Represents the content for composing an email
+@immutable
 class EmailContent {
   /// List of email addresses for the "To" field
   final List<String> to;
@@ -122,4 +125,28 @@ class EmailContent {
 
   @override
   String toString() => 'EmailContent(to: $to, subject: $subject)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is EmailContent &&
+        listEquals(other.to, to) &&
+        listEquals(other.cc, cc) &&
+        listEquals(other.bcc, bcc) &&
+        other.subject == subject &&
+        other.body == body &&
+        other.isHtml == isHtml &&
+        listEquals(other.attachments, attachments);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    Object.hashAll(to),
+    Object.hashAll(cc),
+    Object.hashAll(bcc),
+    subject,
+    body,
+    isHtml,
+    Object.hashAll(attachments),
+  );
 }
