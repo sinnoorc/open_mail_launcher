@@ -99,7 +99,7 @@ void main() {
   test('composeEmail returns true for valid email content', () async {
     OpenMailLauncherPlatform.instance = MockOpenMailLauncherPlatform();
 
-    final emailContent = EmailContent(
+    const emailContent = EmailContent(
       to: ['test@example.com'],
       subject: 'Test',
       body: 'Test email',
@@ -118,7 +118,7 @@ void main() {
   });
 
   test('EmailContent creates valid mailto URI', () {
-    final emailContent = EmailContent(
+    const emailContent = EmailContent(
       to: ['test@example.com', 'test2@example.com'],
       cc: ['cc@example.com'],
       bcc: ['bcc@example.com'],

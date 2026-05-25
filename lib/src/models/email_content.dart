@@ -37,13 +37,15 @@ class EmailContent {
   /// Creates EmailContent from a map
   factory EmailContent.fromMap(Map<String, dynamic> map) {
     return EmailContent(
-      to: List<String>.from(map['to'] ?? []),
-      cc: List<String>.from(map['cc'] ?? []),
-      bcc: List<String>.from(map['bcc'] ?? []),
+      to: List<String>.from(map['to'] as List? ?? const <String>[]),
+      cc: List<String>.from(map['cc'] as List? ?? const <String>[]),
+      bcc: List<String>.from(map['bcc'] as List? ?? const <String>[]),
       subject: map['subject'] as String?,
       body: map['body'] as String?,
       isHtml: map['isHtml'] as bool? ?? false,
-      attachments: List<String>.from(map['attachments'] ?? []),
+      attachments: List<String>.from(
+        map['attachments'] as List? ?? const <String>[],
+      ),
     );
   }
 

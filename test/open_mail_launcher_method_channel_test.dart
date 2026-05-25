@@ -6,7 +6,8 @@ import 'package:open_mail_launcher/open_mail_launcher_method_channel.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  MethodChannelOpenMailLauncher platform = MethodChannelOpenMailLauncher();
+  final MethodChannelOpenMailLauncher platform =
+      MethodChannelOpenMailLauncher();
   const MethodChannel channel = MethodChannel('open_mail_launcher');
 
   setUp(() {
