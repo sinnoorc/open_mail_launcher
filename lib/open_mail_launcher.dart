@@ -12,7 +12,22 @@ export 'src/models/email_content.dart';
 export 'src/models/mail_app.dart';
 export 'src/models/open_mail_app_result.dart';
 
-/// Main class for interacting with email apps on the device
+/// Entry point for discovering and launching email apps on Android and iOS.
+///
+/// All methods are static; the class cannot be instantiated.
+///
+/// ## Platform notes
+///
+/// **iOS** detects apps by probing a fixed list of known URL schemes with
+/// `canOpenURL`. Each scheme the plugin probes **must** be listed in the
+/// consuming app's `Info.plist` under `LSApplicationQueriesSchemes`, or
+/// detection silently fails in release builds. See the README for the full
+/// list.
+///
+/// **Android** uses `PackageManager.queryIntentActivities` with an
+/// `ACTION_SENDTO mailto:` intent. The required `<queries>` block is
+/// contributed automatically by the plugin's `AndroidManifest.xml` via
+/// manifest merging — no consumer setup is needed on Android.
 class OpenMailLauncher {
   OpenMailLauncher._();
 
@@ -82,12 +97,27 @@ class OpenMailLauncher {
   }
 }
 
-/// A dialog widget for selecting a mail app
+/// A Material [AlertDialog] that lets the user pick one of [mailApps].
+///
+/// Returned from [OpenMailLauncher.showMailAppPicker] via [Navigator.pop].
+/// Tapping outside the dialog or tapping cancel returns `null`.
 class MailAppPickerDialog extends StatelessWidget {
+  /// The list of mail apps to display. The dialog renders one [ListTile] per
+  /// entry. App icons are shown when [MailApp.icon] is a data URI (Android
+  /// only); otherwise a generic mail icon is used.
   final List<MailApp> mailApps;
+
+  /// Dialog title shown above the list. Defaults to `'Choose Mail App'`.
   final String? title;
+
+  /// Label of the cancel button. Defaults to `'Cancel'`.
   final String? cancelText;
 
+  /// Creates a [MailAppPickerDialog].
+  ///
+  /// [mailApps] must not be empty. Use [OpenMailLauncher.showMailAppPicker]
+  /// for the typical flow, which short-circuits when zero or one app is
+  /// available.
   const MailAppPickerDialog({
     super.key,
     required this.mailApps,

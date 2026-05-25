@@ -55,19 +55,46 @@ No additional setup required. The plugin automatically handles email intent quer
 
 ### iOS
 
-Add the email app URL schemes you want to query to your `ios/Runner/Info.plist`:
+iOS detects mail apps by probing URL schemes with `canOpenURL`. Each scheme must
+be declared in your app's `ios/Runner/Info.plist` under `LSApplicationQueriesSchemes`.
+**Schemes that are not declared are silently treated as "not installed"**, even
+when the app is actually present — this is the #1 cause of "works in debug, fails
+in release" for this kind of plugin.
+
+Add the full set the plugin probes:
 
 ```xml
 <key>LSApplicationQueriesSchemes</key>
 <array>
     <string>mailto</string>
+    <string>message</string>
     <string>googlegmail</string>
     <string>ms-outlook</string>
     <string>ymail</string>
     <string>readdle-spark</string>
-    <!-- Add more email app schemes as needed -->
+    <string>airmail</string>
+    <string>x-dispatch</string>
+    <string>fastmail</string>
+    <string>superhuman</string>
+    <string>protonmail</string>
+    <string>hey</string>
+    <string>canarymail</string>
+    <string>spike</string>
+    <string>newton</string>
+    <string>polymail</string>
+    <string>typeapp</string>
+    <string>bluemail</string>
+    <string>edison</string>
+    <string>twobird</string>
 </array>
 ```
+
+iOS limits `LSApplicationQueriesSchemes` to a hard maximum of **50 entries**
+per app — listing all 20 above leaves 30 slots free for other features.
+
+If you don't care about a specific mail app, you can omit its scheme to keep
+your plist smaller — detection for that app will return `false` regardless of
+whether it's actually installed.
 
 ## Usage
 
