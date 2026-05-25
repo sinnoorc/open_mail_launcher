@@ -6,7 +6,7 @@
 - [x] Create `codex/audit-upgrade-open-mail-launcher` from fresh `origin/main`.
 - [x] Fix release metadata and documentation drift.
 - [x] Fix iOS compose URL builders.
-- [ ] Fix Android attachment intent handling.
+- [x] Fix Android attachment intent handling.
 - [ ] Harden Dart models, picker icon decoding, and platform-channel tests.
 - [ ] Commit Flutter 3.44 example platform migrations.
 - [ ] Polish CI tooling versions.

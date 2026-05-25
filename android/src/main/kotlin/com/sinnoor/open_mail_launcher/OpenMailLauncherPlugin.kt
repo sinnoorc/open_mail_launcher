@@ -1,5 +1,6 @@
 package com.sinnoor.open_mail_launcher
 
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -63,20 +64,16 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   private fun getMailApps(): List<Map<String, Any?>> {
-    val emailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
+    return getMailAppsForIntent(createMailAppQueryIntent())
+  }
+
+  private fun getMailAppsForIntent(emailIntent: Intent): List<Map<String, Any?>> {
     val packageManager = context.packageManager
-    
-    val resolveInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      packageManager.queryIntentActivities(emailIntent, PackageManager.ResolveInfoFlags.of(0))
-    } else {
-      @Suppress("DEPRECATION")
-      packageManager.queryIntentActivities(emailIntent, 0)
-    }
-    
-    val defaultApp = packageManager.resolveActivity(emailIntent, 0)
+    val resolveInfos = queryIntentActivities(emailIntent, packageManager)
+    val defaultApp = resolveActivity(emailIntent, packageManager)
     val defaultPackageName = defaultApp?.activityInfo?.packageName
     
-    return resolveInfos.map { resolveInfo ->
+    return resolveInfos.distinctBy { it.activityInfo.packageName }.map { resolveInfo ->
       val packageName = resolveInfo.activityInfo.packageName
       mapOf(
         "name" to resolveInfo.loadLabel(packageManager).toString(),
@@ -88,7 +85,8 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   private fun openMailApp(emailContent: Map<String, Any>?, result: Result) {
-    val mailApps = getMailApps()
+    val emailIntent = createEmailIntent(emailContent)
+    val mailApps = getMailAppsForIntent(emailIntent)
     
     if (mailApps.isEmpty()) {
       result.success(mapOf(
@@ -99,14 +97,19 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
       return
     }
     
-    // If only one mail app or Android will handle the chooser
-    val emailIntent = createEmailIntent(emailContent)
-    
     try {
       if (mailApps.size == 1) {
         // Open directly
         emailIntent.setPackage(mailApps[0]["id"] as String)
         emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (!canResolveActivity(emailIntent)) {
+          result.success(mapOf(
+            "didOpen" to false,
+            "canOpen" to false,
+            "options" to emptyList<Map<String, Any?>>()
+          ))
+          return
+        }
         context.startActivity(emailIntent)
         
         result.success(mapOf(
@@ -118,6 +121,7 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
         // Android will show the chooser
         val chooserIntent = Intent.createChooser(emailIntent, "Choose Email App")
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        copyAttachmentGrants(from = emailIntent, to = chooserIntent)
         context.startActivity(chooserIntent)
         
         result.success(mapOf(
@@ -137,7 +141,7 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
       emailIntent.setPackage(appId)
       emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       
-      if (emailIntent.resolveActivity(context.packageManager) != null) {
+      if (canResolveActivity(emailIntent)) {
         context.startActivity(emailIntent)
         result.success(true)
       } else {
@@ -153,8 +157,9 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
       val emailIntent = createEmailIntent(emailContent)
       val chooserIntent = Intent.createChooser(emailIntent, "Send Email")
       chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      copyAttachmentGrants(from = emailIntent, to = chooserIntent)
       
-      if (emailIntent.resolveActivity(context.packageManager) != null) {
+      if (canResolveActivity(emailIntent)) {
         context.startActivity(chooserIntent)
         result.success(true)
       } else {
@@ -166,8 +171,7 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   private fun isMailAppAvailable(): Boolean {
-    val emailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
-    return emailIntent.resolveActivity(context.packageManager) != null
+    return canResolveActivity(createMailAppQueryIntent())
   }
 
   private fun createEmailIntent(emailContent: Map<String, Any>?): Intent {
@@ -234,22 +238,72 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
         if (!subject.isNullOrEmpty()) putExtra(Intent.EXTRA_SUBJECT, subject)
         if (!body.isNullOrEmpty()) putExtra(Intent.EXTRA_TEXT, body)
 
-        val uris = attachments.mapNotNull { path ->
-          try {
-            Uri.parse(path)
-          } catch (e: Exception) {
-            null
-          }
-        }
+        val uris = attachments.mapNotNull(::parseContentUri)
 
         if (uris.isNotEmpty()) {
           putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+          clipData = createAttachmentClipData(uris)
         }
       }
       return sendIntent
     }
-
+    
     return intent
+  }
+
+  private fun createMailAppQueryIntent(): Intent {
+    return Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
+  }
+
+  private fun queryIntentActivities(
+    intent: Intent,
+    packageManager: PackageManager
+  ): List<ResolveInfo> {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      packageManager.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(0))
+    } else {
+      @Suppress("DEPRECATION")
+      packageManager.queryIntentActivities(intent, 0)
+    }
+  }
+
+  private fun resolveActivity(
+    intent: Intent,
+    packageManager: PackageManager
+  ): ResolveInfo? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      packageManager.resolveActivity(intent, PackageManager.ResolveInfoFlags.of(0))
+    } else {
+      @Suppress("DEPRECATION")
+      packageManager.resolveActivity(intent, 0)
+    }
+  }
+
+  private fun canResolveActivity(intent: Intent): Boolean {
+    return resolveActivity(intent, context.packageManager) != null
+  }
+
+  private fun parseContentUri(value: String): Uri? {
+    return try {
+      Uri.parse(value).takeIf { it.scheme == "content" }
+    } catch (e: Exception) {
+      null
+    }
+  }
+
+  private fun createAttachmentClipData(uris: List<Uri>): ClipData {
+    val clipData = ClipData.newUri(context.contentResolver, "Email attachment", uris.first())
+    uris.drop(1).forEach { uri ->
+      clipData.addItem(ClipData.Item(uri))
+    }
+    return clipData
+  }
+
+  private fun copyAttachmentGrants(from source: Intent, to target: Intent) {
+    source.clipData?.let { clipData ->
+      target.clipData = clipData
+      target.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
   }
 
   private fun getAppIconBase64(resolveInfo: ResolveInfo): String? {
