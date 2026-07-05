@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.11.1")
+        classpath("com.android.tools.build:gradle:9.0.1")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
@@ -28,7 +28,7 @@ allprojects {
 android {
     namespace = "com.sinnoor.open_mail_launcher"
 
-    compileSdk = 35
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -41,7 +41,9 @@ android {
     }
 
     defaultConfig {
-        minSdk = 21
+        // Flutter 3.44 dropped support for API < 24, so 24 is the effective
+        // floor for any consumer of this plugin regardless of what we set.
+        minSdk = 24
     }
 
     dependencies {

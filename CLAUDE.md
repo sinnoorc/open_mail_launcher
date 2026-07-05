@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Flutter **federated plugin** (`open_mail_launcher`) that discovers and launches email apps on Android and iOS, with optional pre-filled `EmailContent`. Published to pub.dev; consumed via `package:open_mail_launcher/open_mail_launcher.dart`.
 
-Min versions: Dart `^3.8.0`, Flutter `>=3.3.0`, Android `minSdk 21` / `compileSdk 35`, iOS `12.0+`.
+Min versions: Dart `^3.12.0`, Flutter `>=3.44.0`, Android `minSdk 24` / `compileSdk 36`, iOS `13.0+`. Android toolchain: AGP 9.0.1, Gradle 9.1.0 (example wrapper), Kotlin 2.4.0 — do not bump Gradle past Flutter's max supported version (9.3.1 as of Flutter 3.44; Gradle 9.6+ breaks AGP).
 
 ## Common commands
 
@@ -56,11 +56,11 @@ Channel: `open_mail_launcher`. Methods and argument shapes:
 |---|---|---|
 | `getMailApps` | none | `List<Map>` with `name`, `id`, `icon` (nullable, `data:image/png;base64,...` on Android only), `isDefault` |
 | `openMailApp` | `EmailContent.toMap()` or `null` | `Map` with `didOpen`, `canOpen`, `options: List<Map>` |
-| `openSpecificMailApp` | `{appId, ...EmailContent.toMap()}` flattened | `bool` |
+| `openSpecificMailApp` | `{appId: String, emailContent: EmailContent.toMap()?}` | `bool` |
 | `composeEmail` | `EmailContent.toMap()` | `bool` |
 | `isMailAppAvailable` | none | `bool` |
 
-Quirk: `openSpecificMailApp` flattens `appId` into the same map as the email content. Android reads `appId` via `call.argument<String>("appId")` and treats the rest as email content. iOS reads `args["appId"]` and then passes the same `args` dict as the email content. Keep this shape if you extend it.
+Quirk: a `null` email content means "open the mail app" (inbox / main screen), NOT "compose an empty email". Both native sides branch on this: Android uses `getLaunchIntentForPackage` / the `CATEGORY_APP_EMAIL` selector, iOS opens the app's bare URL scheme (except the synthesized `mailto:` default entry, which composes — no iOS API exists to open the default mail app). The `mailto:` intent is still used for app *discovery* on Android in all cases.
 
 ### Models (`lib/src/models/`)
 
@@ -70,7 +70,7 @@ Quirk: `openSpecificMailApp` flattens `appId` into the same map as the email con
 
 ### Platform behavior differences (load-bearing)
 
-- **Android** discovers apps via `PackageManager.queryIntentActivities(ACTION_SENDTO mailto:)`. When >1 app, returns `didOpen=true` after launching the system chooser — Dart never sees the picker case. Attachments switch the intent to `ACTION_SEND_MULTIPLE` with `EXTRA_STREAM`. Icons are PNG-encoded base64 data URIs.
+- **Android** discovers apps via `PackageManager.queryIntentActivities(ACTION_SENDTO mailto:)`. When >1 app, returns `didOpen=true` after launching the system chooser (compose chooser with content, `CATEGORY_APP_EMAIL` selector without) — Dart never sees the picker case. Attachments switch the intent to `ACTION_SEND_MULTIPLE` with `EXTRA_STREAM`. Icons are PNG-encoded base64 data URIs.
 - **iOS** has no equivalent enumeration API; uses a **hardcoded `knownMailApps` list** of `(name, scheme)` pairs in `OpenMailLauncherPlugin.swift` and probes each with `canOpenURL`. When >1 app, returns `didOpen=false, canOpen=true` and lets Dart show `MailAppPickerDialog`. Icons are always `nil`. No attachment support.
 - **iOS consumer requirement**: every URL scheme in `knownMailApps` must be listed in the consuming app's `Info.plist` under `LSApplicationQueriesSchemes`, or `canOpenURL` returns `false` silently. Adding a new mail app means updating both `knownMailApps` AND the example app's `Info.plist` AND documenting it in `README.md`.
 - **Per-app URL builders** for Gmail / Outlook / Spark live in `createAppSpecificURL` (iOS only) — other schemes fall back to a `mailto:` string with the prefix swapped. New first-class iOS app support = add a `create<Name>URL` and branch in `createAppSpecificURL`.

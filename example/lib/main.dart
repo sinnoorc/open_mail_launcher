@@ -82,8 +82,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  EmailContent _createEmailContent() {
-    return EmailContent(
+  /// Null when every field is empty — the plugin then opens the mail app
+  /// itself (inbox / main screen) instead of a compose window.
+  EmailContent? _createEmailContent() {
+    final content = EmailContent(
       to: _toController.text
           .split(',')
           .map((e) => e.trim())
@@ -102,6 +104,14 @@ class _HomePageState extends State<HomePage> {
       subject: _subjectController.text,
       body: _bodyController.text,
     );
+
+    final isEmpty =
+        content.to.isEmpty &&
+        content.cc.isEmpty &&
+        content.bcc.isEmpty &&
+        (content.subject?.isEmpty ?? true) &&
+        (content.body?.isEmpty ?? true);
+    return isEmpty ? null : content;
   }
 
   Future<void> _openMailApp() async {
@@ -176,8 +186,9 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
+      // Compose always needs content — an all-empty form composes blank.
       final success = await OpenMailLauncher.composeEmail(
-        emailContent: _createEmailContent(),
+        emailContent: _createEmailContent() ?? const EmailContent(),
       );
 
       setState(() {

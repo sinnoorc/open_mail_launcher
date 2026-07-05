@@ -40,7 +40,10 @@ class OpenMailLauncher {
 
   /// Opens the default mail app or returns available options if multiple exist
   ///
-  /// If [emailContent] is provided, it will pre-fill the compose window
+  /// If [emailContent] is provided, a compose window is opened with the
+  /// content pre-filled. If omitted, the mail app itself is opened (its
+  /// inbox / main screen), not a compose window — except iOS's synthesized
+  /// "Default Mail App" entry, which iOS can only open via `mailto:`.
   static Future<OpenMailAppResult> openMailApp({EmailContent? emailContent}) {
     return OpenMailLauncherPlatform.instance.openMailApp(
       emailContent: emailContent,
@@ -48,6 +51,11 @@ class OpenMailLauncher {
   }
 
   /// Opens a specific mail app by its ID
+  ///
+  /// If [emailContent] is provided, a compose window is opened with the
+  /// content pre-filled; otherwise the app itself is opened — except iOS's
+  /// synthesized "Default Mail App" entry (`mailto:`), which iOS can only
+  /// open via a compose window.
   ///
   /// Returns true if the app was successfully opened
   static Future<bool> openSpecificMailApp({

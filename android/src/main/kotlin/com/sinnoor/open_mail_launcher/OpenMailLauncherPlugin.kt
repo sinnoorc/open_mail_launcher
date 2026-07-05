@@ -85,9 +85,12 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   private fun openMailApp(emailContent: Map<String, Any>?, result: Result) {
-    val emailIntent = createEmailIntent(emailContent)
-    val mailApps = getMailAppsForIntent(emailIntent)
-    
+    // No content means "open the mail app", not "compose an email" — so the
+    // mailto: intent is used only to discover mail apps, never launched
+    // directly in that case (issue #18).
+    val composeIntent = emailContent?.let { createEmailIntent(it) }
+    val mailApps = getMailAppsForIntent(composeIntent ?: createMailAppQueryIntent())
+
     if (mailApps.isEmpty()) {
       result.success(mapOf(
         "didOpen" to false,
@@ -96,13 +99,23 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
       ))
       return
     }
-    
+
     try {
       if (mailApps.size == 1) {
-        // Open directly
-        emailIntent.setPackage(mailApps[0]["id"] as String)
-        emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        if (!canResolveActivity(emailIntent)) {
+        val packageName = mailApps[0]["id"] as String
+        val launchIntent = if (composeIntent != null) {
+          composeIntent.setPackage(packageName)
+          composeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          composeIntent.takeIf { canResolveActivity(it) }
+        } else {
+          // A mailto: handler can lack a launcher activity (headless /
+          // work-profile stub) — try the system email selector before
+          // reporting "no apps" for an app we just discovered.
+          createInboxIntent(packageName)
+            ?: Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_EMAIL)
+              .takeIf { canResolveActivity(it) }
+        }
+        if (launchIntent == null) {
           result.success(mapOf(
             "didOpen" to false,
             "canOpen" to false,
@@ -110,20 +123,25 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
           ))
           return
         }
-        context.startActivity(emailIntent)
-        
+        context.startActivity(launchIntent)
+
         result.success(mapOf(
           "didOpen" to true,
           "canOpen" to true,
           "options" to mailApps
         ))
       } else {
-        // Android will show the chooser
-        val chooserIntent = Intent.createChooser(emailIntent, "Choose Email App")
+        val chooserIntent = if (composeIntent != null) {
+          // Android will show the chooser
+          Intent.createChooser(composeIntent, "Choose Email App").also {
+            copyAttachmentGrants(source = composeIntent, target = it)
+          }
+        } else {
+          createInboxChooserIntent(mailApps)
+        }
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        copyAttachmentGrants(source = emailIntent, target = chooserIntent)
         context.startActivity(chooserIntent)
-        
+
         result.success(mapOf(
           "didOpen" to true,
           "canOpen" to true,
@@ -135,14 +153,43 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
     }
   }
 
+  /** Opens [packageName]'s main screen (inbox) rather than a compose window. */
+  private fun createInboxIntent(packageName: String): Intent? {
+    return context.packageManager.getLaunchIntentForPackage(packageName)
+      ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+  }
+
+  /**
+   * System picker over email apps' main screens. CATEGORY_APP_EMAIL is the
+   * canonical "open an email app" selector; if no installed app declares it,
+   * fall back to launching the first discovered mail app's inbox directly.
+   */
+  private fun createInboxChooserIntent(mailApps: List<Map<String, Any?>>): Intent {
+    val selectorIntent =
+      Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_EMAIL)
+    if (canResolveActivity(selectorIntent)) {
+      return selectorIntent
+    }
+    // queryIntentActivities order is arbitrary — prefer the user's default
+    // mailto: handler when falling back to a single app's inbox.
+    val fallbackApp = mailApps.firstOrNull { it["isDefault"] == true } ?: mailApps[0]
+    return createInboxIntent(fallbackApp["id"] as String) ?: selectorIntent
+  }
+
   private fun openSpecificMailApp(appId: String, emailContent: Map<String, Any>?, result: Result) {
     try {
-      val emailIntent = createEmailIntent(emailContent)
-      emailIntent.setPackage(appId)
-      emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      
-      if (canResolveActivity(emailIntent)) {
-        context.startActivity(emailIntent)
+      // No content → open the app's inbox, not a compose window (issue #18).
+      val intent = if (emailContent != null) {
+        createEmailIntent(emailContent).apply {
+          setPackage(appId)
+          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }.takeIf { canResolveActivity(it) }
+      } else {
+        createInboxIntent(appId)
+      }
+
+      if (intent != null) {
+        context.startActivity(intent)
         result.success(true)
       } else {
         result.success(false)
@@ -174,11 +221,7 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
     return canResolveActivity(createMailAppQueryIntent())
   }
 
-  private fun createEmailIntent(emailContent: Map<String, Any>?): Intent {
-    if (emailContent == null) {
-      return Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
-    }
-    
+  private fun createEmailIntent(emailContent: Map<String, Any>): Intent {
     val uriBuilder = StringBuilder("mailto:")
     
     // Add recipients

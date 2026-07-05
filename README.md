@@ -1,7 +1,7 @@
 # Open Mail Launcher
 
 [![pub package](https://img.shields.io/pub/v/open_mail_launcher.svg)](https://pub.dev/packages/open_mail_launcher)
-[![Flutter](https://img.shields.io/badge/Flutter-3.32.0+-blue.svg)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.44.0+-blue.svg)](https://flutter.dev)
 [![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-green.svg)](https://flutter.dev)
 [![Open Mail Launcher CI](https://github.com/sinnoorc/open_mail_launcher/actions/workflows/main.yml/badge.svg)](https://github.com/sinnoorc/open_mail_launcher/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/sinnoorc/open_mail_launcher/graph/badge.svg?token=YOUR_TOKEN_HERE)](https://codecov.io/gh/sinnoorc/open_mail_launcher)
@@ -282,6 +282,7 @@ try {
 ### Android
 
 - Shows native app chooser when multiple apps are available
+- Opens the mail app's inbox (not a compose window) when no `emailContent` is passed
 - Supports `content://` URI attachments
 - Can detect default email app
 - Uses package manager to discover apps
@@ -289,6 +290,7 @@ try {
 ### iOS
 
 - Returns list of available apps for manual selection
+- Opens the app itself (not a compose window) when no `emailContent` is passed — except the synthesized "Default Mail App" entry, which iOS can only open via `mailto:`
 - URL scheme-based app detection
 - Limited to known email app schemes
 - No attachment support due to iOS limitations

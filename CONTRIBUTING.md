@@ -10,7 +10,7 @@ We welcome contributions! Here are some guidelines to help you get started.
 
 ## Development
 
-1.  This package supports Flutter `>=3.32.0`; CI tracks the latest stable Flutter.
+1.  This package supports Flutter `>=3.44.0`; CI tracks the latest stable Flutter.
 2.  Run `flutter pub get` to install dependencies.
 3.  We use `flutter_lints` for code analysis. Run `flutter analyze` ensuring no errors or warnings before committing.
 4.  Format your code using `dart format .`.

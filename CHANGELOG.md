@@ -1,3 +1,38 @@
+## 0.3.0
+
+Toolchain currency release plus one behavior fix. No public Dart API
+signatures change, but calling `openMailApp()` / `openSpecificMailApp()`
+without `emailContent` now behaves differently — see **Fixed**.
+
+### Fixed
+
+- **Android & iOS:** `openMailApp()` and `openSpecificMailApp()` called
+  without `emailContent` now open the mail app itself (inbox / main
+  screen) instead of a blank compose window
+  ([#18](https://github.com/sinnoorc/open_mail_launcher/issues/18)).
+  Android launches the app's launcher intent (single app) or the system
+  `CATEGORY_APP_EMAIL` selector (multiple apps); iOS opens the app's
+  bare URL scheme. Exception: iOS's synthesized "Default Mail App"
+  entry can only be opened via `mailto:`, which still composes — iOS
+  has no "open default mail app" API. Passing `emailContent` composes
+  exactly as before.
+
+### Changed
+
+- **Flutter SDK floor:** `>=3.32.0` → `>=3.44.0`; **Dart:** `^3.8.0` →
+  `^3.12.0`.
+- **Android toolchain:** AGP 8.11.1 → 9.0.1, Gradle wrapper (example)
+  8.14 → 9.1.0, `compileSdk` 35 → 36 — the Flutter 3.44 template
+  defaults. Note: Gradle 9.6+ is incompatible with AGP 8.x/9.0.x
+  (removed internal APIs); Flutter's max supported Gradle is currently
+  9.3.1.
+- **Android `minSdk`:** 21 → 24. Flutter 3.44 itself dropped support
+  for API < 24, so this excludes no one who can run the required
+  Flutter version.
+- **Kotlin:** 2.2.20 → 2.4.0 (Dependabot
+  [#13](https://github.com/sinnoorc/open_mail_launcher/pull/13),
+  [#14](https://github.com/sinnoorc/open_mail_launcher/pull/14)).
+
 ## 0.2.0
 
 Correctness, currency, and pub-score release. No public Dart API

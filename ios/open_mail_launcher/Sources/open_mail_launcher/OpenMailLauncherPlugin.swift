@@ -199,6 +199,14 @@ public class OpenMailLauncherPlugin: NSObject, FlutterPlugin {
     // app's URL format on a real device. ProtonMail / Fastmail / Airmail
     // builders are TODO pending empirical verification (v0.3).
 
+    // No content means "open the mail app", not "compose an email" — open
+    // the app's bare scheme (inbox / main screen) instead of a compose URL.
+    // The synthesized "Default Mail App" entry (mailto:) is the exception:
+    // iOS has no "open default mail app" API, so it still composes.
+    if emailContent == nil, scheme != "mailto:" {
+      return URL(string: scheme)
+    }
+
     // The synthesized "Default Mail App" entry uses mailto: directly,
     // delegating routing to the user's iOS default handler.
     if scheme == "mailto:" {
