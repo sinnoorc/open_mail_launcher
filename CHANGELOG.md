@@ -1,3 +1,17 @@
+## 0.3.1
+
+### Fixed
+
+- **Android:** `openMailApp()` without `emailContent` and multiple mail
+  apps installed no longer launches straight into the default mail app —
+  the system chooser is shown again, listing the discovered mail apps'
+  inbox (launcher) intents
+  ([#18](https://github.com/sinnoorc/open_mail_launcher/issues/18)
+  regression in 0.3.0). The 0.3.0 code started a bare
+  `CATEGORY_APP_EMAIL` selector, which Android resolves directly to the
+  default handler without a picker. Note: Android's chooser caps
+  `EXTRA_INITIAL_INTENTS` at 2 on API 29+, so at most 3 apps appear.
+
 ## 0.3.0
 
 Toolchain currency release plus one behavior fix. No public Dart API

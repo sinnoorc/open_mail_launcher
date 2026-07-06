@@ -160,20 +160,30 @@ class OpenMailLauncherPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   /**
-   * System picker over email apps' main screens. CATEGORY_APP_EMAIL is the
-   * canonical "open an email app" selector; if no installed app declares it,
-   * fall back to launching the first discovered mail app's inbox directly.
+   * System chooser over the discovered mail apps' main screens (inboxes).
+   *
+   * A bare CATEGORY_APP_EMAIL selector must NOT be startActivity'd here:
+   * Android resolves it straight to the default handler without showing a
+   * picker, and mailto: handlers often don't declare that category at all
+   * (issue #18 regression). Instead, chooser over the apps we discovered.
    */
   private fun createInboxChooserIntent(mailApps: List<Map<String, Any?>>): Intent {
-    val selectorIntent =
-      Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_EMAIL)
-    if (canResolveActivity(selectorIntent)) {
-      return selectorIntent
+    // queryIntentActivities order is arbitrary — put the user's default
+    // mailto: handler first so it becomes the chooser's base target.
+    val ordered = mailApps.sortedByDescending { it["isDefault"] == true }
+    val launchIntents = ordered.mapNotNull { createInboxIntent(it["id"] as String) }
+    if (launchIntents.isEmpty()) {
+      // Headless / work-profile stubs only — the selector is better than nothing.
+      return Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_EMAIL)
     }
-    // queryIntentActivities order is arbitrary — prefer the user's default
-    // mailto: handler when falling back to a single app's inbox.
-    val fallbackApp = mailApps.firstOrNull { it["isDefault"] == true } ?: mailApps[0]
-    return createInboxIntent(fallbackApp["id"] as String) ?: selectorIntent
+    if (launchIntents.size == 1) {
+      return launchIntents[0]
+    }
+    // ponytail: ChooserActivity caps EXTRA_INITIAL_INTENTS at 2 on API 29+,
+    // so at most 3 apps appear; fine until devices with 4+ mail apps show up.
+    return Intent.createChooser(launchIntents[0], "Choose Email App").apply {
+      putExtra(Intent.EXTRA_INITIAL_INTENTS, launchIntents.drop(1).toTypedArray())
+    }
   }
 
   private fun openSpecificMailApp(appId: String, emailContent: Map<String, Any>?, result: Result) {
