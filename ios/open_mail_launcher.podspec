@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'open_mail_launcher'
-  s.version          = '0.3.1'
+  s.version          = '0.4.0-beta.1'
   s.summary          = 'Flutter plugin for opening installed mail apps.'
   s.description      = <<-DESC
 Open Mail Launcher discovers installed email apps on Android and iOS, opens a

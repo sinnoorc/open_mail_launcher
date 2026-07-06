@@ -1,3 +1,30 @@
+## 0.4.0-beta.1
+
+### Added
+
+- **macOS support (beta).** Full API parity: mail apps are enumerated via
+  Launch Services (`NSWorkspace.urlsForApplications(toOpen:)` on macOS 12+,
+  `LSCopyApplicationURLsForURL` on 10.15–11) — no hardcoded scheme list and
+  no `LSApplicationQueriesSchemes` setup, unlike iOS. Returns real names,
+  icons (PNG data URIs), and the authoritative system default.
+  `MailApp.id` is the bundle identifier. `openMailApp()` opens the system
+  default directly; without `emailContent` the app itself opens (inbox),
+  with content a compose window opens. Ships with SPM and CocoaPods
+  support (macOS 10.15+).
+- **Linux support (beta).** Mail apps are the registered
+  `x-scheme-handler/mailto` handlers via GIO
+  (`g_app_info_get_all_for_type`), with the default from
+  `mimeapps.list` — the same data `xdg-mime` uses. `MailApp.id` is the
+  `.desktop` file id; icons are null. Same open/compose semantics as
+  macOS. Caveat: a consuming app sandboxed as Flatpak/Snap may not see
+  the host's mail apps.
+- CI now builds the example app for Linux and macOS.
+
+### Unchanged
+
+- No attachment support outside Android (`mailto:` cannot carry
+  attachments). Windows and Web are not yet supported.
+
 ## 0.3.1
 
 ### Fixed

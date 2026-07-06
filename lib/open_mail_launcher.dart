@@ -30,6 +30,14 @@ export 'src/models/open_mail_app_result.dart';
 /// `ACTION_SENDTO mailto:` intent. The required `<queries>` block is
 /// contributed automatically by the plugin's `AndroidManifest.xml` via
 /// manifest merging — no consumer setup is needed on Android.
+///
+/// **macOS** (beta) enumerates every installed `mailto:` handler through
+/// Launch Services — no scheme allowlist and no setup. [MailApp.id] is the
+/// app's bundle identifier.
+///
+/// **Linux** (beta) enumerates the registered `x-scheme-handler/mailto`
+/// handlers via GIO — no setup. [MailApp.id] is the app's `.desktop` file
+/// id; icons are not available.
 class OpenMailLauncher {
   OpenMailLauncher._();
 

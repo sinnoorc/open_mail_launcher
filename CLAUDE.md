@@ -47,6 +47,8 @@ Standard federated-plugin three-layer split. When adding a new method, all four 
 4. **Native implementations**
    - Android: `android/src/main/kotlin/com/sinnoor/open_mail_launcher/OpenMailLauncherPlugin.kt`
    - iOS: `ios/open_mail_launcher/Sources/open_mail_launcher/OpenMailLauncherPlugin.swift` (see "iOS source layout" below)
+   - macOS (beta): `macos/open_mail_launcher/Sources/open_mail_launcher/OpenMailLauncherPlugin.swift` — real enumeration via `NSWorkspace` (macOS 12+ `urlsForApplications(toOpen:)`, `LSCopyApplicationURLsForURL` fallback on 10.15-11); `id` = bundle identifier; opens the system default directly (no picker case). Same single-tree SPM+podspec layout as iOS but a separate implementation (AppKit vs UIKit — do not try to share via `sharedDarwinSource`).
+   - Linux (beta): `linux/open_mail_launcher_plugin.cc` — GIO `g_app_info_get_all_for_type("x-scheme-handler/mailto")`; `id` = .desktop file id; icons always null; opens the default handler directly. GIO comes in via the GTK link, no extra deps. Compiled only in CI (ubuntu job builds the example) — it cannot be compiled on macOS, so treat Linux CI as the compile gate for any change there.
 
 ### Method channel contract
 

@@ -2,11 +2,12 @@
 
 [![pub package](https://img.shields.io/pub/v/open_mail_launcher.svg)](https://pub.dev/packages/open_mail_launcher)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.0+-blue.svg)](https://flutter.dev)
-[![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-green.svg)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios%20%7C%20macos%20%7C%20linux-green.svg)](https://flutter.dev)
 [![Open Mail Launcher CI](https://github.com/sinnoorc/open_mail_launcher/actions/workflows/main.yml/badge.svg)](https://github.com/sinnoorc/open_mail_launcher/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/sinnoorc/open_mail_launcher/graph/badge.svg?token=YOUR_TOKEN_HERE)](https://codecov.io/gh/sinnoorc/open_mail_launcher)
 
-A Flutter plugin to open email applications on Android and iOS. This plugin allows you to:
+A Flutter plugin to open email applications on Android, iOS, macOS, and Linux
+(desktop support is in **beta** as of 0.4.0). This plugin allows you to:
 
 - Query for available email apps on the device
 - Open the default email app or a specific email app
@@ -15,7 +16,7 @@ A Flutter plugin to open email applications on Android and iOS. This plugin allo
 
 ## Features
 
-✅ **Cross-platform**: Android and iOS support  
+✅ **Cross-platform**: Android, iOS, macOS (beta), and Linux (beta)  
 ✅ **Email app discovery**: Get list of installed email apps  
 ✅ **Smart app opening**: Automatic handling of single vs multiple apps  
 ✅ **Pre-filled composition**: Support for To, CC, BCC, subject, and body  
@@ -98,6 +99,19 @@ per app — listing all 16 above leaves 34 slots free for other features.
 If you don't care about a specific mail app, you can omit its scheme to keep
 your plist smaller — detection for that app will return `false` regardless of
 whether it's actually installed.
+
+### macOS (beta)
+
+No setup required. Mail apps are discovered through Launch Services
+(`NSWorkspace`) — every installed `mailto:` handler is found, with no
+scheme allowlist. `MailApp.id` is the app's bundle identifier.
+
+### Linux (beta)
+
+No setup required. Mail apps are the registered `x-scheme-handler/mailto`
+handlers (the same list `xdg-mime` consults). `MailApp.id` is the app's
+`.desktop` file id. Note: if **your** app ships as a Flatpak or Snap, the
+sandbox may hide the host's installed mail apps.
 
 ## Usage
 
@@ -261,6 +275,10 @@ OpenMailAppResult(
 - Superhuman
 - And many more
 
+### macOS & Linux (beta)
+
+- Any installed app registered as a `mailto:` handler — no hardcoded list
+
 ## Error Handling
 
 The plugin provides comprehensive error handling:
@@ -294,6 +312,22 @@ try {
 - URL scheme-based app detection
 - Limited to known email app schemes
 - No attachment support due to iOS limitations
+
+### macOS (beta)
+
+- Full mail app enumeration via Launch Services (names, icons, real default)
+- `openMailApp()` opens the system default mail app directly (no picker needed —
+  macOS always has an authoritative default)
+- No `emailContent` opens the app itself; with content a compose window opens
+- No attachment support (`mailto:` cannot carry attachments)
+
+### Linux (beta)
+
+- Mail app enumeration via `x-scheme-handler/mailto` (GIO); icons are not
+  provided (`MailApp.icon` is null)
+- `openMailApp()` opens the system default handler directly
+- No `emailContent` opens the app itself; with content a compose window opens
+- No attachment support (`mailto:` cannot carry attachments)
 
 ## Example
 

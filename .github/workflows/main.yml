@@ -78,6 +78,55 @@ jobs:
         working-directory: example/android
         run: ./gradlew open_mail_launcher:testDebugUnitTest --stacktrace
 
+  linux:
+    name: Linux (example build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install GTK toolchain
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve plugin deps
+        run: flutter pub get
+
+      - name: Resolve example deps
+        working-directory: example
+        run: flutter pub get
+
+      - name: Build example for Linux
+        working-directory: example
+        run: flutter build linux --debug
+
+  macos:
+    name: macOS (example build)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve plugin deps
+        run: flutter pub get
+
+      - name: Resolve example deps
+        working-directory: example
+        run: flutter pub get
+
+      - name: Build example for macOS
+        working-directory: example
+        run: flutter build macos --debug
+
   ios:
     name: iOS (pod lib lint + example simulator build)
     runs-on: macos-latest
